@@ -6,7 +6,7 @@ from transformers import TFAutoModel
 from transformers import AutoTokenizer
 
 #Database Initialization
-client = QdrantClient("http://10.12.9.105:6333")
+client = QdrantClient("http://34.101.137.149:6333")
 
 class TFSentenceTransformer(tf.keras.layers.Layer):
     def __init__(self, model_name_or_path, **kwargs):
