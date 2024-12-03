@@ -11,8 +11,7 @@ from IPython.display import display, clear_output, Markdown
 
 app = Flask(__name__)
 
-client = QdrantClient("https://c56346fe-194b-4166-a930-915844d54af5.us-east-1-0.aws.cloud.qdrant.io:6333/",
-                      api_key = "RKlzScQJy5oMtooCItO2w79nVpSbH54QE92te8uZof-JfWf_sxfYxA")
+client = QdrantClient("http://34.101.137.149:6333")
 
 class TFSentenceTransformer(tf.keras.layers.Layer):
     def __init__(self, model_name_or_path, **kwargs):
