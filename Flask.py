@@ -9,10 +9,6 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from IPython.display import display, clear_output, Markdown
 
-app = Flask(__name__)
-
-client = QdrantClient("http://34.101.137.149:6333")
-
 class TFSentenceTransformer(tf.keras.layers.Layer):
     def __init__(self, model_name_or_path, **kwargs):
         super(TFSentenceTransformer, self).__init__()
@@ -40,6 +36,11 @@ class TFSentenceTransformer(tf.keras.layers.Layer):
     def normalize(self, embeddings):
         embeddings, _ = tf.linalg.normalize(embeddings, 2, axis=1)
         return embeddings
+    
+app = Flask(__name__)
+
+client = QdrantClient("https://c56346fe-194b-4166-a930-915844d54af5.us-east-1-0.aws.cloud.qdrant.io:6333/",
+                      api_key = "RKlzScQJy5oMtooCItO2w79nVpSbH54QE92te8uZof-JfWf_sxfYxA")
 
 model_id = 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
 tokenizer = AutoTokenizer.from_pretrained(model_id)
@@ -72,43 +73,46 @@ prompt_template = PromptTemplate(
 llm_chain = LLMChain(
     llm=llama,
     prompt=prompt_template
+    
 )
-
-def search(query):
-    # Tokenize query
-    query_vector = tokenizer(query, padding=True, truncation=True, return_tensors="tf")
-
-    # Generate embeddings using the model
-    query_vector = model(query_vector).numpy().tolist()
-
-    # Perform search in Qdrant
-    results = client.search(
-        collection_name='Healthcare',
-        query_vector=query_vector[0],  # Use the first embedding in the batch
-        limit=3
-    )
-
-    # Sort results by score
-    sorted_result = sorted(results, key=lambda x: x.score, reverse=True)
-
-    # Return formatted results
-    return [res.payload['question'] + ' ' + res.payload['answer'] for res in sorted_result]
 
 def generate(context, query, tone="professional and friendly"):
     context_text = ' '.join(context)
     response = llm_chain.run(context=context_text, query=query, tone=tone)
     return response
 
+def search(query):
+    query_vector = tokenizer(query, padding=True, truncation=True, return_tensors="tf")
+
+    query_vector = model(query_vector).numpy().tolist()
+
+    # Perform search in Qdrant
+    results = client.search(
+        collection_name='Healthcare',
+        query_vector=query_vector[0],
+        limit=3
+    )
+
+    sorted_result = sorted(results, key=lambda x: x.score, reverse=True)
+
+    # Return formatted results
+    return [res.payload['question'] + ' ' + res.payload['answer'] for res in sorted_result]
+
 @app.route("/query", methods=['POST'])
 def answer():
-    question = request.get_json()
-    query = question.get('query')
+    try:
+        question = request.get_json()
+        query = question.get('query')
 
-    result = search(query)
+        if not query:
+            return jsonify({'error': 'Query is required'}), 400
 
-    response = generate(result, query)
+        result = search(query)
+        response = generate(result, query)
 
-    return jsonify({'response': response})
+        return jsonify({'response': response})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 
