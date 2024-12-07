@@ -11,7 +11,9 @@
   "description": "",
   "dependencies": {
     "@hapi/hapi": "^21.3.12",
+    "@huggingface/transformers": "^3.1.1",
     "dotenv": "^16.4.7",
-    "qdrant-client": "^0.0.1"
+    "ollama": "^0.5.11",
+    "@qdrant/js-client-rest": "^1.12.0"
   }
 }

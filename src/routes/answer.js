@@ -1,4 +1,4 @@
-const { generate, search } = require('../handler/answerHandler');
+const { generate, search } = require('../handler/answerHandler.js');
 
 const answer = {
     method: 'POST',
