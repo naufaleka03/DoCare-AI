@@ -1,10 +1,14 @@
 const Hapi = require('@hapi/hapi');
+require('dotenv').config(); // Load environment variables from .env file
 const { answer } = require('./routes/answer.js');
+
+// Use environment variable for port, default to 8080 if not set
+const PORT = process.env.PORT || 8080;
 
 const init = async () => {
     const server = Hapi.server({
-        port: 8080,
-        host: 'localhost'
+        port: PORT,
+        host: '0.0.0.0' // Listen on all network interfaces
     });
 
     server.route(answer);

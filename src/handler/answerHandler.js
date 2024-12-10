@@ -1,18 +1,19 @@
 const { QdrantClient } = require('@qdrant/js-client-rest');
 const { AutoTokenizer, AutoModel } = require('@huggingface/transformers');
 const ollama = require('ollama');
+require('dotenv').config(); 
 
 const client = new QdrantClient({
-    url: "http://34.101.137.149:6333/",
-    apiKey: "5b578c4f34188f0474f901e49d4726213596433d",
+    url: process.env.QDRANT_URL,
+    apiKey: process.env.QDRANT_API_KEY,
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
-        'api-key': "5b578c4f34188f0474f901e49d4726213596433d"
+        'api-key': process.env.QDRANT_API_KEY
     }
 });
 
-let tokenizer; // Declare tokenizer variable
+let tokenizer;
 
 // Create an async function to initialize the tokenizer
 const initializeTokenizer = async () => {
@@ -45,7 +46,7 @@ async function generate(context, query, tone = "professional and friendly") {
 
     try {
         // Create a request to the Ollama API
-        const response = await fetch('http://localhost:11434/api/generate', {
+        const response = await fetch('process.env.OLLAMA_API_URL', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -53,13 +54,7 @@ async function generate(context, query, tone = "professional and friendly") {
             body: JSON.stringify({
                 model: 'llama3.1',
                 prompt: inputText,
-                stream: false,
-                options: {
-                    num_predict: 500,  // Limit response length
-                    temperature: 0.7,  // Lower = faster but less creative
-                    top_k: 40,        // Limit token selection
-                    top_p: 0.9        // Nucleus sampling
-                }
+                stream: false
             })
         });
 
@@ -130,7 +125,7 @@ async function handleResponse(response) {
 async function testQdrantConnection() {
     try {
         // First try a direct HTTP request to verify connectivity
-        const response = await fetch("http://34.101.137.149:6333/collections");
+        const response = await fetch(`${process.env.QDRANT_URL}collections`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
