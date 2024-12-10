@@ -1,8 +1,16 @@
 const { QdrantClient } = require('@qdrant/js-client-rest');
-const { AutoTokenizer } = require('@huggingface/transformers');
+const { AutoTokenizer, AutoModel } = require('@huggingface/transformers');
 const ollama = require('ollama');
 
-const client = new QdrantClient("https://c56346fe-194b-4166-a930-915844d54af5.us-east-1-0.aws.cloud.qdrant.io:6333/", "RKlzScQJy5oMtooCItO2w79nVpSbH54QE92te8uZof-JfWf_sxfYxA");
+const client = new QdrantClient({
+    url: "http://34.101.137.149:6333/",
+    apiKey: "5b578c4f34188f0474f901e49d4726213596433d",
+    timeout: 10000,
+    headers: {
+        'Content-Type': 'application/json',
+        'api-key': "5b578c4f34188f0474f901e49d4726213596433d"
+    }
+});
 
 let tokenizer; // Declare tokenizer variable
 
@@ -15,65 +23,142 @@ const initializeTokenizer = async () => {
 initializeTokenizer();
 
 async function generate(context, query, tone = "professional and friendly") {
+    console.log('Context being used:', context); // Log the context being used
+    
     const contextText = context.join(' ');
     const inputText = `
     You are a healthcare chatbot. Please answer the question in a tone ${tone}.
-    (Details omitted for brevity)
+    Give all the answers related to the question disease. If there is no answer related to the disease, don't say "no information", but say "this is the only information I got". Do not make up an answer.
+    If the answer is not available, don't answer, do not make up an answer.
+    Here are some rules on how to answer :
+    - Use language that is ${tone}
+    - Before answering say "Thank you for consulting with DoCare AI"
+    - At the end of the answer say "Hope this information helps and wish you a speedy recovery and say thank you"
+    - Answer questions based on the language of the question given.
+    The following is informational text to answer questions later:
+    
+    ${contextText}
+    
+    After you read the informational text, answer the following questions clearly according to the question.
+    Question: ${query}
     `;
 
     try {
-        const response = await ollama.chat({
-            model: 'llama3.1',
-            messages: [
-                { role: 'system', content: inputText },
-                { role: 'user', content: query }
-            ],
-            options: { seed: 237 },
-            stream: true
+        // Create a request to the Ollama API
+        const response = await fetch('http://localhost:11434/api/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'llama3.1',
+                prompt: inputText,
+                stream: false,
+                options: {
+                    num_predict: 500,  // Limit response length
+                    temperature: 0.7,  // Lower = faster but less creative
+                    top_k: 40,        // Limit token selection
+                    top_p: 0.9        // Nucleus sampling
+                }
+            })
         });
-        return response;
+
+        const data = await response.json();
+        return data.response;
     } catch (error) {
         console.error("Error during generation:", error);
         throw error;
     }
 }
 
-async function search(query) {
+async function generateEmbeddings(query) {
     try {
-        // Log the incoming query
-        console.log('Incoming Query:', query);
-
-        // Tokenize the query
-        const queryVector = tokenizer.encode(query, { padding: true, truncation: true });
-        console.log('Query Vector:', queryVector); // Log the query vector
-        console.log('Query Vector Length:', queryVector.length);
-
-        // Perform the search
-        const results = await client.search({
-            collection_name: 'Healthcare',
-            query_vector: queryVector[0],
-            limit: 3
+        // Tokenize the input
+        const encoded = await tokenizer(query, {
+            padding: true,
+            truncation: true,
+            return_tensors: "tf"
         });
 
-        // Log the raw response from Qdrant
-        console.log('Raw Search Results:', results);
-
-        // Check if results are returned
-        if (!results || results.length === 0) {
-            console.warn('No results returned from Qdrant.');
-            throw new Error('No results returned from Qdrant.');
-        }
-
-        // Log the structure of the results
-        console.log('Results Structure:', JSON.stringify(results, null, 2));
-
-        // Sort results by score
-        const sortedResult = results.sort((a, b) => b.score - a.score);
-        return sortedResult.map(res => `${res.payload.question} ${res.payload.answer}`);
+        // Convert to embeddings using the model
+        const model = await AutoModel.from_pretrained('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2');
+        const embeddings = await model(encoded);
+        
+        return embeddings;
     } catch (error) {
-        console.error("Error during search:", error);
+        console.error("Error generating embeddings:", error);
         throw error;
     }
 }
+
+async function search(query) {
+    try {
+        console.log('Starting search for query:', query);
+        
+        // Perform search in Qdrant
+        const results = await client.search('Healthcare', {
+            vector: Array(384).fill(0), // This is the issue! We're using dummy vectors
+            limit: 3
+        });
+        
+        // Add detailed logging
+        console.log('Search scores:', results.map(r => ({
+            score: r.score,
+            question: r.payload.question
+        })));
+
+        if (!results || results.length === 0) {
+            console.warn('No results returned from Qdrant.');
+            return [];
+        }
+
+        return results.map(res => `${res.payload.question} ${res.payload.answer}`);
+    } catch (error) {
+        console.error("Search Error:", error);
+        throw error;
+    }
+}
+
+async function handleResponse(response) {
+    let output = '';
+    for await (const chunk of response) {
+        output += chunk.message.content;
+    }
+    return output;
+}
+
+async function testQdrantConnection() {
+    try {
+        // First try a direct HTTP request to verify connectivity
+        const response = await fetch("http://34.101.137.149:6333/collections");
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Direct HTTP test successful:', data);
+        
+        // Then try the client
+        const collections = await client.getCollections();
+        console.log('Available Collections:', collections);
+        
+        return true;
+    } catch (error) {
+        console.error('Failed to connect to Qdrant:', error.message);
+        if (error.cause) {
+            console.error('Cause:', error.cause);
+        }
+        return false;
+    }
+}
+
+// Add this to your initialization code
+testQdrantConnection()
+    .then(isConnected => {
+        if (isConnected) {
+            console.log('Successfully connected to Qdrant');
+        } else {
+            console.log('Failed to connect to Qdrant');
+        }
+    });
 
 module.exports = { generate, search };
