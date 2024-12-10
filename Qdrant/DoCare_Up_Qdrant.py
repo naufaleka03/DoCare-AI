@@ -36,7 +36,7 @@ class TFSentenceTransformer(tf.keras.layers.Layer):
         return embeddings
 
 def data():
-    dataset = pd.read_csv('Dataset/medquad.csv')
+    dataset = pd.read_csv('medquad.csv')
 
     dataset.drop_duplicates(inplace=True)
 
