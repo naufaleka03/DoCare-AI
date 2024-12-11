@@ -80,7 +80,9 @@ def data():
     print(f"Total Processing Time: {total_time:.2f} seconds")
 
     client = QdrantClient("http://10.12.9.105:6333")
-
+    
+    client.delete_collection(collection_name='{Healthcare}')
+    
     #Input Data to Qdrant
     client.recreate_collection(
         collection_name='Healthcare',
