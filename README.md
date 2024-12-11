@@ -23,7 +23,7 @@ Our team consist of 3 machine learning, 2 cloud computing, and 1 mobile developm
 Postman documentation: <br>
 
 ## Datasets
-Datasets: https://github.com/naufaleka03/DoCare-AI/tree/Machine-Learning/Dataset <br>
+Datasets: [Datasets](https://github.com/naufaleka03/DoCare-AI/tree/Machine-Learning/Dataset) 
 
 ## UI/UX Designs
 - Lo-Fi design: <br>
