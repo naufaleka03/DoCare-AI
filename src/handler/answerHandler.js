@@ -106,17 +106,14 @@ const generate = async (context, query, tone = "professional and friendly") => {
                 options: {
                     temperature: 0.7,
                     top_p: 0.9,
-                    num_predict: 768,        // Balanced for T4 GPU
-                    num_ctx: 1024,           // Reduced for memory efficiency
-                    num_thread: 4,           // Match vCPU count
+                    num_predict: 512,     // Optimized for CPU
+                    num_ctx: 1024,        // Reduced context
+                    num_thread: 4,        // Match vCPU count
                     repeat_penalty: 1.1,
-                    num_gpu: 1,
-                    batch_size: 16,          // Optimized for T4
-                    gpu_layers: 32,          // Balanced for T4
-                    f16_kv: true,            // Enable FP16 for efficiency
-                    rope_frequency_base: 10000,
-                    rope_frequency_scale: 0.5,
-                    mirostat_mode: 2,
+                    num_cpu: 4,           // Use all CPUs
+                    batch_size: 1,        // Small batch for CPU
+                    seed: 42,             // Consistent responses
+                    mirostat_mode: 2,     // Better quality control
                     mirostat_tau: 5,
                     mirostat_eta: 0.1
                 }
