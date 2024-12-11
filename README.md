@@ -14,7 +14,7 @@ Our team consist of 3 machine learning, 2 cloud computing, and 1 mobile developm
 |Sekar Wening Candra Kinanthi|A012B4KX4094 |Mobile Development|
 
 ## About Docare AI
-DoCare AI is a healthcare app designed to help users recognize and respond to their symptoms through AI-based chatbot technology<br>
+DoCare AI is a healthcare app designed to help users recognize and respond to their symptoms through AI-based chatbot technology. The app offers personalized guidance by analyzing the symptoms entered by users and providing initial advice on how to manage them.<br>
 
 ## Machine Learning Architecture
 
@@ -28,5 +28,5 @@ Datasets: <br>
 
 ## UI/UX Designs
 - Lo-Fi design: <br>
-- Hi-Fi design: <br>
+- Hi-Fi design: 
 
