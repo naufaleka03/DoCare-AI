@@ -68,6 +68,9 @@ const generate = async (context, query, tone = "professional and friendly") => {
     logSystemResources();
     const startTime = Date.now();
     
+    // Optimize context length for memory efficiency
+    const contextText = context.join('\n\n').slice(0, 1500);
+    
     const messageContent = `
     You are DoCare AI, a healthcare chatbot. Follow these instructions:
     1. ALWAYS start with: "Thank you for consulting with DoCare AI"
@@ -79,10 +82,9 @@ const generate = async (context, query, tone = "professional and friendly") => {
        - Prevention/Management
     3. Keep responses complete and well-structured
     4. Use markdown formatting
-    5. NEVER cut responses mid-sentence
-    6. Maximum response length: 800 words
-    
-    Context: ${context.join('\n\n')}
+    5. Maximum response length: 600 words
+
+    Context: ${contextText}
     Question: ${query}`;
 
     try {
@@ -104,19 +106,19 @@ const generate = async (context, query, tone = "professional and friendly") => {
                 options: {
                     temperature: 0.7,
                     top_p: 0.9,
-                    num_predict: 1024,
-                    num_ctx: 2048,
-                    num_thread: 6,        // Increased threads
+                    num_predict: 768,        // Balanced for T4 GPU
+                    num_ctx: 1024,           // Reduced for memory efficiency
+                    num_thread: 4,           // Match vCPU count
                     repeat_penalty: 1.1,
                     num_gpu: 1,
-                    batch_size: 8,
-                    gpu_layers: 35,
-                    f16_kv: true,
+                    batch_size: 16,          // Optimized for T4
+                    gpu_layers: 32,          // Balanced for T4
+                    f16_kv: true,            // Enable FP16 for efficiency
                     rope_frequency_base: 10000,
                     rope_frequency_scale: 0.5,
                     mirostat_mode: 2,
                     mirostat_tau: 5,
-                    mirostat_eta: 0.1,
+                    mirostat_eta: 0.1
                 }
             })
         });
