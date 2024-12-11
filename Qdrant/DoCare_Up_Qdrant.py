@@ -79,9 +79,9 @@ def data():
     total_time = time.time() - start_time
     print(f"Total Processing Time: {total_time:.2f} seconds")
 
-    client = QdrantClient("http://10.12.9.105:6333")
+    client = QdrantClient("http://34.101.137.149:6333")
     
-    client.delete_collection(collection_name='{Healthcare}')
+    # client.delete_collection(collection_name='{Healthcare}')
     
     #Input Data to Qdrant
     client.recreate_collection(
