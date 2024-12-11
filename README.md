@@ -1,4 +1,6 @@
 # DoCare AI - Quick Aid, Smart Guidance
+DoCare AI is a healthcare app designed to help users recognize and respond to their symptoms through AI-based chatbot technology. The app offers personalized guidance by analyzing the symptoms entered by users and providing initial advice on how to manage them.
+
 ## Bangkit Capstone Project 2024
 Capstone Team ID : C242-PS530<br>
 Our team consist of 3 machine learning, 2 cloud computing, and 1 mobile development.
@@ -12,9 +14,6 @@ Our team consist of 3 machine learning, 2 cloud computing, and 1 mobile developm
 |Naufal Eka Prasetya         |C012B4KY3282 |Cloud Computing   |
 |Rachmawati                  |C012B4KX3558 |Cloud Computing   |
 |Sekar Wening Candra Kinanthi|A012B4KX4094 |Mobile Development|
-
-## About Docare AI
-DoCare AI is a healthcare app designed to help users recognize and respond to their symptoms through AI-based chatbot technology. The app offers personalized guidance by analyzing the symptoms entered by users and providing initial advice on how to manage them.<br>
 
 ## Machine Learning Architecture
 
