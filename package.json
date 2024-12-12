@@ -1,0 +1,19 @@
+{
+  "name": "docare-ai",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@hapi/hapi": "^21.3.12",
+    "@huggingface/transformers": "^3.1.1",
+    "@qdrant/js-client-rest": "^1.12.0",
+    "dotenv": "^16.4.7",
+    "ollama": "^0.5.11"
+  }
+}
