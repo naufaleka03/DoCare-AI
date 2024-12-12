@@ -17,4 +17,4 @@ This is a Cloud Computing repository.
 ## Tools
 
 ## Architecture
-![Cloud architecture](https://github.com/naufaleka03/DoCare-AI/blob/main/Assets/Cloud%20computing%20architecture.png)
+![Cloud architecture](https://github.com/naufaleka03/DoCare-AI/blob/main/Assets/CC_Architecture.png)
