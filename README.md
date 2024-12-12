@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # DoCare AI - Quick Aid, Smart Guidance
 DoCare AI is a healthcare app designed to help users recognize and respond to their symptoms through AI-based chatbot technology. The app offers personalized guidance by analyzing the symptoms entered by users and providing initial advice on how to manage them.
 
@@ -30,3 +31,22 @@ Datasets: [Datasets](https://github.com/naufaleka03/DoCare-AI/tree/Machine-Learn
 - Hi-Fi design: [Hi-Fi](https://www.figma.com/design/t33R83JMYNxpOEeqe6MYMh/DoCare-AI?node-id=0-1&t=KtgwQn32TlgY5Z0E-1)
 - Design Prototype Link [Prototype](https://www.figma.com/proto/t33R83JMYNxpOEeqe6MYMh/DoCare-AI?node-id=38-2&node-type=canvas&t=bT0DDaYUkI99px69-0&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=38%3A2&show-proto-sidebar=1)
 
+=======
+# DoCare AI - Quick Aid, Smart Guidance - Cloud Computing
+## Bangkit Capstone Project 2024
+Capstone Team ID : C242-PS530<br>
+This is a Cloud Computing repository.
+
+## Cloud Computing Schedule
+|Task  |Week 1         |Week 2                 |Week 3                 |Week 4                 |Week 5                         |Week 6          |Week 7               |
+|:----:|:-------------:|:---------------------:|:---------------------:|:---------------------:|:-----------------------------:|:--------------:|:--------------------|
+|Task 1|               |Explore Architecture   |                       |                       |                               |                |                     |
+|Task 2|               |                       |Explore Architecture   |                       |                               |                |                     |
+|Task 3|               |                       |                       |Explore Architecture   |                               |                |                     |
+|Task 4|               |                       |                       |                       |Deploy & Train Vector DB Qdrant|                |                     |
+|Task 5|               |                       |                       |                       |                               |APIs Deployment |                     |
+|Task 6|               |                       |                       |                       |                               |                |Deploy Cloud Solution|
+
+## Architecture
+![Cloud architecture](https://github.com/naufaleka03/DoCare-AI/blob/main/Assets/CC_Architecture.png)
+>>>>>>> a9c1806f2d43e65fddae177e26c32ecf55a46ef9
