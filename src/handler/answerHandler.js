@@ -76,7 +76,22 @@ const generate = async (context, query, tone = "professional and friendly") => {
     logSystemResources();
     timings.afterHardware = Date.now();
     
-    // Optimize context for faster processing
+    // Pre-warm the model with a dummy request
+    try {
+        await fetch(`${OLLAMA_HOST}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'llama3.1',
+                messages: [{ role: 'user', content: 'hi' }],
+                options: { num_predict: 1 }
+            })
+        });
+    } catch (error) {
+        console.log('Prewarm failed, continuing...');
+    }
+
+    // Optimize context
     const contextText = context
         .slice(0, 2)
         .join('\n\n')
@@ -122,13 +137,17 @@ const generate = async (context, query, tone = "professional and friendly") => {
                     num_thread: 4,         // Use all CPU cores
                     repeat_penalty: 1.1,
                     num_cpu: 4,
-                    batch_size: 64,        // Increased for n1-standard-4
+                    batch_size: 128,       // Increased for better throughput
                     seed: 42,
-                    mirostat_mode: 1,      // Changed for faster responses
-                    mirostat_tau: 3,       // Reduced for speed
-                    mirostat_eta: 0.1,
-                    num_keep: 5,           // Memory efficiency
-                    rope_scaling: { type: "linear", factor: 1 }
+                    mirostat_mode: 0,      // Changed to fastest mode
+                    mirostat_tau: 0,       // Disabled for speed
+                    mirostat_eta: 0,       // Disabled for speed
+                    num_keep: 5,
+                    num_gpu: 0,            // Explicitly disable GPU
+                    rope_scaling: { type: "linear", factor: 1 },
+                    num_batch: 512,        // Added for parallel processing
+                    cache_capacity: 2000,  // Increased cache size
+                    cache_type: "ram"      // Use RAM cache
                 }
             })
         });
@@ -265,7 +284,7 @@ async function search(query) {
     }
 }
 
-async function handleResponse(response, timings) {
+async function handleResponse(response) {
     if (!response.body) {
         throw new Error('Response body is null or undefined');
     }
@@ -275,7 +294,6 @@ async function handleResponse(response, timings) {
         let output = '';
         const decoder = new TextDecoder();
         let buffer = '';
-        let firstTokenReceived = false;
         
         console.log('\nGenerating Response:\n');
         console.log('-------------------\n');
@@ -286,11 +304,6 @@ async function handleResponse(response, timings) {
             
             const chunk = decoder.decode(value, { stream: true });
             buffer += chunk;
-            
-            if (!firstTokenReceived) {
-                timings.firstToken = Date.now();
-                firstTokenReceived = true;
-            }
             
             const lines = buffer.split('\n');
             buffer = lines.pop() || '';
