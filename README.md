@@ -14,7 +14,7 @@ This is a Machine Learning repository.
 |Task 5|               |                       |                       |                       |                       |Model Deployment|
 
 ## Architecture
-![ML Architecture](Assets/ML_Architecture.png)
+![ML Architecture](https://github.com/naufaleka03/DoCare-AI/blob/main/Assets/ML_Architecture.png)
 
 ## How to Use
 - Clone repository github branch Machine-Learning
