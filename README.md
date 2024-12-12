@@ -13,8 +13,15 @@ This is a Machine Learning repository.
 |Task 4|               |                       |                       |                       |                       |Model Evaluation|
 |Task 5|               |                       |                       |                       |                       |Model Deployment|
 
-## Description
-
-## Tools
-
 ## Architecture
+![ML Architecture]()
+
+## How to Use
+- Clone repository github branch Machine-Learning
+- Install Python version >= 3.9.18.
+- Pull Docker Qdrant docker pull qdrant/qdrant
+- Pull Docker Ollama Ollama docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+- Run a model  Ollama docker exec -it ollama ollama run llama3.1:8b
+- Install dependencies pip install -r requirements.txt
+- Run DoCare_AI.ipynb
+- Run LLM.ipynb
