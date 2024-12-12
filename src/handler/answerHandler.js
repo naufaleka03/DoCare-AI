@@ -66,14 +66,21 @@ const ollama = new Ollama({
 });
 
 const generate = async (context, query, tone = "professional and friendly") => {
+    const timings = {
+        start: Date.now(),
+        afterHardware: 0,
+        firstToken: 0,
+        complete: 0
+    };
+    
     logSystemResources();
-    const startTime = Date.now();
+    timings.afterHardware = Date.now();
     
     // Optimize context for faster processing
     const contextText = context
-        .slice(0, 3)  // Use only top 2 most relevant contexts
+        .slice(0, 2)
         .join('\n\n')
-        .slice(0, 1000);  // Reduced context for faster processing
+        .slice(0, 1000);
     
     const messageContent = `
     You are DoCare AI, a healthcare chatbot. Follow these instructions:
@@ -114,8 +121,8 @@ const generate = async (context, query, tone = "professional and friendly") => {
                     num_ctx: 1024,         // Reduced context window
                     num_thread: 4,         // Use all CPU cores
                     repeat_penalty: 1.1,
-                    num_cpu: 4,            // Use all CPUs
-                    batch_size: 32,        // Increased for better throughput
+                    num_cpu: 4,
+                    batch_size: 64,        // Increased for n1-standard-4
                     seed: 42,
                     mirostat_mode: 1,      // Changed for faster responses
                     mirostat_tau: 3,       // Reduced for speed
@@ -126,19 +133,17 @@ const generate = async (context, query, tone = "professional and friendly") => {
             })
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        console.log('\nStreaming response:\n');
-        const fullResponse = await handleResponse(response);
+        console.log('\nTiming Analysis:');
+        console.log(`Hardware logs to API call: ${(Date.now() - timings.afterHardware)/1000}s`);
         
-        const endTime = Date.now();
-        console.log('\nGenerated Response:');
-        console.log('-------------------');
-        console.log(fullResponse);
-        console.log('-------------------');
-        console.log(`Response time: ${(endTime - startTime)/1000} seconds`);
+        const fullResponse = await handleResponse(response, timings);
+        
+        timings.complete = Date.now();
+        console.log('\nDetailed Timing Breakdown:');
+        console.log(`- Hardware logging: ${(timings.afterHardware - timings.start)/1000}s`);
+        console.log(`- Time to first token: ${(timings.firstToken - timings.afterHardware)/1000}s`);
+        console.log(`- Generation time: ${(timings.complete - timings.firstToken)/1000}s`);
+        console.log(`Total response time: ${(timings.complete - timings.start)/1000}s`);
 
         return fullResponse;
     } catch (error) {
@@ -260,7 +265,7 @@ async function search(query) {
     }
 }
 
-async function handleResponse(response) {
+async function handleResponse(response, timings) {
     if (!response.body) {
         throw new Error('Response body is null or undefined');
     }
@@ -270,6 +275,7 @@ async function handleResponse(response) {
         let output = '';
         const decoder = new TextDecoder();
         let buffer = '';
+        let firstTokenReceived = false;
         
         console.log('\nGenerating Response:\n');
         console.log('-------------------\n');
@@ -280,6 +286,11 @@ async function handleResponse(response) {
             
             const chunk = decoder.decode(value, { stream: true });
             buffer += chunk;
+            
+            if (!firstTokenReceived) {
+                timings.firstToken = Date.now();
+                firstTokenReceived = true;
+            }
             
             const lines = buffer.split('\n');
             buffer = lines.pop() || '';
