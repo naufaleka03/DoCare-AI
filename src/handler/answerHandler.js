@@ -132,22 +132,22 @@ const generate = async (context, query, tone = "professional and friendly") => {
                 options: {
                     temperature: 0.7,
                     top_p: 0.9,
-                    num_predict: 512,      // Reduced for faster responses
-                    num_ctx: 1024,         // Reduced context window
-                    num_thread: 4,         // Use all CPU cores
+                    num_predict: 512,
+                    num_ctx: 1024,
+                    num_thread: 8,       // Matches e2-standard-8 vCPUs
                     repeat_penalty: 1.1,
-                    num_cpu: 4,
-                    batch_size: 128,       // Increased for better throughput
-                    seed: 42,
-                    mirostat_mode: 0,      // Changed to fastest mode
-                    mirostat_tau: 0,       // Disabled for speed
-                    mirostat_eta: 0,       // Disabled for speed
+                    num_cpu: 8,          // Matches e2-standard-8 vCPUs
+                    batch_size: 512,     // Optimized for memory and throughput
+                    seed: 42,            // Optional for reproducibility
+                    mirostat_mode: 0,    // Fastest mode
+                    mirostat_tau: 0,
+                    mirostat_eta: 0,
                     num_keep: 5,
-                    num_gpu: 0,            // Explicitly disable GPU
+                    num_gpu: 0,          // Explicitly disable GPU
                     rope_scaling: { type: "linear", factor: 1 },
-                    num_batch: 512,        // Added for parallel processing
-                    cache_capacity: 2000,  // Increased cache size
-                    cache_type: "ram"      // Use RAM cache
+                    num_batch: 512,      // Maximized for throughput
+                    cache_capacity: 8000,// Balanced memory usage
+                    cache_type: "ram"
                 }
             })
         });
