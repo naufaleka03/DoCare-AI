@@ -48,6 +48,7 @@ const initialize = async () => {
     try {
         tokenizer = await AutoTokenizer.from_pretrained('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2');
         model = await AutoModel.from_pretrained('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2');
+        isInitialized = true;  // Set flag when initialization is complete
         console.log('Models initialized successfully');
     } catch (error) {
         console.error('Error initializing models:', error);
@@ -55,8 +56,8 @@ const initialize = async () => {
     }
 };
 
-// Call initialization at startup
-initialize();
+// Call initialization at startup and export the promise
+const initPromise = initialize();
 
 // Update Ollama configuration
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
@@ -68,8 +69,11 @@ const generate = async (context, query, tone = "professional and friendly") => {
     logSystemResources();
     const startTime = Date.now();
     
-    // Optimize context length for memory efficiency
-    const contextText = context.join('\n\n').slice(0, 1500);
+    // Optimize context for faster processing
+    const contextText = context
+        .slice(0, 3)  // Use only top 2 most relevant contexts
+        .join('\n\n')
+        .slice(0, 1000);  // Reduced context for faster processing
     
     const messageContent = `
     You are DoCare AI, a healthcare chatbot. Follow these instructions:
@@ -80,9 +84,9 @@ const generate = async (context, query, tone = "professional and friendly") => {
        - Symptoms
        - Treatment Options
        - Prevention/Management
-    3. Keep responses complete and well-structured
+    3. Keep responses concise but complete
     4. Use markdown formatting
-    5. Maximum response length: 600 words
+    5. Maximum response length: 400 words
 
     Context: ${contextText}
     Question: ${query}`;
@@ -106,19 +110,18 @@ const generate = async (context, query, tone = "professional and friendly") => {
                 options: {
                     temperature: 0.7,
                     top_p: 0.9,
-                    num_predict: 1024,    // Increased for faster completion
-                    num_ctx: 1024,        // Increased context window
-                    num_thread: 4,        // Use all CPU cores
+                    num_predict: 512,      // Reduced for faster responses
+                    num_ctx: 1024,         // Reduced context window
+                    num_thread: 4,         // Use all CPU cores
                     repeat_penalty: 1.1,
-                    num_cpu: 4,           // Use all CPUs
-                    batch_size: 8,        // Increased for better throughput
+                    num_cpu: 4,            // Use all CPUs
+                    batch_size: 32,        // Increased for better throughput
                     seed: 42,
-                    mirostat_mode: 1,     // Changed for faster responses
-                    mirostat_tau: 3,      // Reduced for speed
+                    mirostat_mode: 1,      // Changed for faster responses
+                    mirostat_tau: 3,       // Reduced for speed
                     mirostat_eta: 0.1,
-                    num_keep: 5,          // Memory efficiency
-                    num_gpu: 0,           // Explicitly disable GPU
-                    rope_scaling: { type: "linear", factor: 1 } // Better performance
+                    num_keep: 5,           // Memory efficiency
+                    rope_scaling: { type: "linear", factor: 1 }
                 }
             })
         });
@@ -147,6 +150,12 @@ const generate = async (context, query, tone = "professional and friendly") => {
 async function generateEmbeddings(query) {
     const startTime = Date.now();
     console.log('Starting embedding generation:', new Date().toISOString());
+    
+    // Wait for initialization if needed
+    if (!isInitialized) {
+        console.log('Waiting for models to initialize...');
+        await initialize();
+    }
     
     if (!model || !tokenizer) {
         throw new Error('Models not initialized');
@@ -191,52 +200,60 @@ async function generateEmbeddings(query) {
 }
 
 async function search(query) {
-    const startTime = Date.now();
-    console.log('Starting vector search:', new Date().toISOString());
-    
     try {
-        console.log('Starting search for query:', query);
+        // Wait for initialization to complete
+        await initPromise;
         
-        const vectorArray = await generateEmbeddings(query);
+        const startTime = Date.now();
+        console.log('Starting vector search:', new Date().toISOString());
         
-        if (!vectorArray) {
-            console.warn('Failed to generate embeddings');
-            return [];
-        }
-        
-        // Remove score_threshold to get all results first
-        const results = await client.search('Healthcare', {
-            vector: vectorArray,
-            limit: 3
-            // Removed score_threshold: 0.7
-        });
-        
-        // Log all results with scores for debugging
-        console.log('Raw search results:', results.map(r => ({
-            score: r.score,
-            question: r.payload.question,
-            answer: r.payload.answer?.substring(0, 50) + '...' // Log first 50 chars of answer
-        })));
-
-        // Filter results if needed based on score
-        const filteredResults = results.filter(r => r.score > 0.3); // More lenient threshold
-
-        console.log('Search results after filtering:', {
-            query,
-            totalResults: filteredResults.length,
-            scores: filteredResults.map(r => ({
+        try {
+            console.log('Starting search for query:', query);
+            
+            const vectorArray = await generateEmbeddings(query);
+            
+            if (!vectorArray) {
+                console.warn('Failed to generate embeddings');
+                return [];
+            }
+            
+            // Remove score_threshold to get all results first
+            const results = await client.search('Healthcare', {
+                vector: vectorArray,
+                limit: 3
+                // Removed score_threshold: 0.7
+            });
+            
+            // Log all results with scores for debugging
+            console.log('Raw search results:', results.map(r => ({
                 score: r.score,
-                question: r.payload.question
-            }))
-        });
+                question: r.payload.question,
+                answer: r.payload.answer?.substring(0, 50) + '...' // Log first 50 chars of answer
+            })));
 
-        if (!filteredResults || filteredResults.length === 0) {
-            console.warn('No relevant results found for query:', query);
-            return [];
+            // Filter results if needed based on score
+            const filteredResults = results.filter(r => r.score > 0.3); // More lenient threshold
+
+            console.log('Search results after filtering:', {
+                query,
+                totalResults: filteredResults.length,
+                scores: filteredResults.map(r => ({
+                    score: r.score,
+                    question: r.payload.question
+                }))
+            });
+
+            if (!filteredResults || filteredResults.length === 0) {
+                console.warn('No relevant results found for query:', query);
+                return [];
+            }
+
+            console.log(`Vector search took: ${(Date.now() - startTime)/1000}s`);
+            return filteredResults.map(res => `${res.payload.question} ${res.payload.answer}`);
+        } catch (error) {
+            console.error("Search Error:", error.message, error.stack);
+            throw error;
         }
-
-        console.log(`Vector search took: ${(Date.now() - startTime)/1000}s`);
-        return filteredResults.map(res => `${res.payload.question} ${res.payload.answer}`);
     } catch (error) {
         console.error("Search Error:", error.message, error.stack);
         throw error;
@@ -358,4 +375,4 @@ try {
     console.log('Unable to set process priority, continuing with default');
 }
 
-module.exports = { generate, search };
+module.exports = { generate, search, initialize };
