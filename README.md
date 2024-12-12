@@ -14,7 +14,7 @@ This is a Machine Learning repository.
 |Task 5|               |                       |                       |                       |                       |Model Deployment|
 
 ## Architecture
-![ML Architecture]()
+![ML Architecture](Assets/ML_Architecture.png)
 
 ## How to Use
 - Clone repository github branch Machine-Learning
