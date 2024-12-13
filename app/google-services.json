@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "266197919925",
+    "project_id": "docare-ai",
+    "storage_bucket": "docare-ai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:266197919925:android:23f1217b6926ad6810f6fc",
+        "android_client_info": {
+          "package_name": "com.example.docare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "266197919925-3o8bg59tbkpkrrput89koc8b3jcu3m04.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBiUXIWvV1cYldL6dG0EQBL7YRnYctYVtU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "266197919925-3o8bg59tbkpkrrput89koc8b3jcu3m04.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:266197919925:android:eb97eb4b53c34e0910f6fc",
+        "android_client_info": {
+          "package_name": "com.example.docareai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "266197919925-3o8bg59tbkpkrrput89koc8b3jcu3m04.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBiUXIWvV1cYldL6dG0EQBL7YRnYctYVtU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "266197919925-3o8bg59tbkpkrrput89koc8b3jcu3m04.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
