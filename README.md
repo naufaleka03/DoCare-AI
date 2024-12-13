@@ -1,4 +1,4 @@
-# DoCare AI - Quick Aid, Smart Guidance - Machine Learning
+# DoCare AI - Quick Aid & Smart Guidance - Machine Learning
 
 ## Bangkit Capstone Project 2024
 Capstone Team ID : C242-PS530<br>
